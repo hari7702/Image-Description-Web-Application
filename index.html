@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Description</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            text-align: center;
+        }
+        #output {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Description</h1>
+        <form id="upload-form">
+            <input type="file" id="image" name="image" accept="image/*" required />
+            <button type="submit">Upload & Get Description</button>
+        </form>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        document.getElementById("upload-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const imageFile = document.getElementById("image").files[0];
+            if (!imageFile) {
+                alert("Please upload an image.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("image", imageFile);
+
+            try {
+                const response = await fetch("http://127.0.0.1:5000/predict", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const data = await response.json();
+                const outputDiv = document.getElementById("output");
+
+                if (data.error) {
+                    outputDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+                } else {
+                    outputDiv.innerHTML = "<h3>Predictions:</h3>";
+                    data.predictions.forEach(prediction => {
+                        outputDiv.innerHTML += `<p><b>${prediction.label}</b>: ${prediction.confidence}</p>`;
+                    });
+                }
+            } catch (error) {
+                alert("Error connecting to the server. Please try again.");
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
